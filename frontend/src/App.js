@@ -12,7 +12,7 @@ const CONTRACT_ADDRESS = "0x0EBe4e0FB5bA6EA6358199Ba545470e92b58595c";
 const App = () => {
   const [currentAccount, setCurrentAccount] = useState("");
   const [noOfMinted, setNoOfMinted] = useState(0);
-  
+
   const checkIfWalletIsConnected = async () => {
     const { ethereum } = window;
 
@@ -24,7 +24,14 @@ const App = () => {
     }
 
     const accounts = await ethereum.request({ method: 'eth_accounts' });
+    let chainId = await ethereum.request({ method: 'eth_chainId' });
+    console.log("Connected to chain " + chainId);
 
+    // String, hex code of the chainId of the Rinkebey test network
+    const rinkebyChainId = "0x4";
+    if (chainId !== rinkebyChainId) {
+      alert("You are not connected to the Rinkeby Test Network!");
+    }
     if (accounts.length !== 0) {
       const account = accounts[0];
       console.log("Found an authorized account:", account);
@@ -47,6 +54,14 @@ const App = () => {
         alert("Get MetaMask!");
         return;
       }
+      let chainId = await ethereum.request({ method: 'eth_chainId' });
+      console.log("Connected to chain " + chainId);
+
+      // String, hex code of the chainId of the Rinkebey test network
+      const rinkebyChainId = "0x4";
+      if (chainId !== rinkebyChainId) {
+        alert("You are not connected to the Rinkeby Test Network!");
+      }
 
       /*
       * Fancy method to request access to account.
@@ -57,8 +72,8 @@ const App = () => {
       * Boom! This should print out public address once we authorize Metamask.
       */
       console.log("Connected", accounts[0]);
-      setCurrentAccount(accounts[0]); 
-      setupEventListener() ;
+      setCurrentAccount(accounts[0]);
+      setupEventListener();
       getNoOfMinted();
     } catch (error) {
       console.log(error)
@@ -97,17 +112,17 @@ const App = () => {
   const getNoOfMinted = async () => {
     try {
       const { ethereum } = window;
-  
+
       if (ethereum) {
         const provider = new ethers.providers.Web3Provider(ethereum);
         const signer = provider.getSigner();
         const connectedContract = new ethers.Contract(CONTRACT_ADDRESS, myEpicNft.abi, signer);
-  
+
         console.log("Going to pop wallet now to pay gas...")
         const minted = await connectedContract.getTotalNFTsMintedSoFar();
         console.log("Total minted so far:", minted.toNumber());
         setNoOfMinted(minted.toNumber());
-  
+
       } else {
         console.log("Ethereum object doesn't exist!");
       }
@@ -117,24 +132,24 @@ const App = () => {
   }
 
   const askContractToMintNft = async () => {
-  
+
     try {
       const { ethereum } = window;
-  
+
       if (ethereum) {
         const provider = new ethers.providers.Web3Provider(ethereum);
         const signer = provider.getSigner();
         const connectedContract = new ethers.Contract(CONTRACT_ADDRESS, myEpicNft.abi, signer);
-  
+
         console.log("Going to pop wallet now to pay gas...")
         let nftTxn = await connectedContract.makeAnEpicNFT();
-  
+
         console.log("Mining...please wait.")
         await nftTxn.wait();
-        
+
         console.log(`Mined, see transaction: https://rinkeby.etherscan.io/tx/${nftTxn.hash}`);
         getNoOfMinted();
-  
+
       } else {
         console.log("Ethereum object doesn't exist!");
       }
@@ -143,7 +158,7 @@ const App = () => {
     }
   }
 
-  
+
 
   // Render Methods
   const renderNotConnectedContainer = () => (
